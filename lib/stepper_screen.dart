@@ -1,5 +1,6 @@
 import 'dart:typed_data';
-
+import 'package:provider/provider.dart';
+import 'package:qagingclock/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:qagingclock/widgets/aging_chart_simple.dart';
 import 'package:qagingclock/widgets/basic_info_form.dart';
@@ -43,10 +44,33 @@ class _StepperScreenState extends State<StepperScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        leading: Builder(
+          builder: (BuildContext context) {
+            return IconButton(
+              icon: const Icon(Icons.home_rounded),
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/home');
+              },
+            );
+          },
+        ),
+        actions: [
+          Builder(
+            builder: (BuildContext context) {
+              return IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: () async {
+                  AuthProvider authProvider =
+                      Provider.of<AuthProvider>(context, listen: false);
+                  await authProvider.signOut();
+                  Navigator.pushReplacementNamed(context, '/login');
+                },
+              );
+            },
+          ),
+        ],
         title: Text(
-          "Q-AgingClock",
-          style: TextStyle(color: Colors.white),
+          "Information submission",
         ),
       ),
       body: Form(
@@ -128,6 +152,9 @@ class _StepperScreenState extends State<StepperScreen> {
   Future<String?> updateFirestore(Map<String, dynamic> formData) async {
     try {
       // Save the form data as a document in Firestore
+
+      formData['insertionDate'] = DateTime.now().millisecondsSinceEpoch;
+
       DocumentReference docRef = await FirebaseFirestore.instance
           .collection('submissions')
           .add(formData);

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:qagingclock/providers/auth_provider.dart';
 import 'package:qagingclock/widgets/choice_card.dart';
+import 'package:provider/provider.dart';
 
 class UserChoiceScreen extends StatelessWidget {
   @override
@@ -7,7 +9,24 @@ class UserChoiceScreen extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Welcome, User!')),
+      appBar: AppBar(
+        title: Text('Welcome, User!'),
+        actions: [
+          Builder(
+            builder: (BuildContext context) {
+              return IconButton(
+                icon: const Icon(Icons.logout),
+                onPressed: () async {
+                  AuthProvider authProvider =
+                      Provider.of<AuthProvider>(context, listen: false);
+                  await authProvider.signOut();
+                  Navigator.pushReplacementNamed(context, '/login');
+                },
+              );
+            },
+          ),
+        ],
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20.0),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:qagingclock/providers/auth_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,8 +13,15 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   String _email = '';
   String _password = '';
+  bool pwdVisible = true;
 
   TextEditingController _emailController = TextEditingController();
+
+  @override
+  void initState() {
+    _autoLogin();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,58 +39,78 @@ class _LoginScreenState extends State<LoginScreen> {
                     constraints: BoxConstraints(minWidth: 100, maxWidth: 400),
                     child: Form(
                       key: _formKey,
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                "Welcome back",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w800, fontSize: 24),
-                              ),
-                            ],
-                          ),
-                          TextFormField(
-                            controller: _emailController,
-                            decoration: InputDecoration(labelText: 'Email'),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your email';
-                              }
-                              return null;
-                            },
-                            onSaved: (value) => _email = value!,
-                          ),
-                          SizedBox(height: 16),
-                          TextFormField(
-                            decoration: InputDecoration(labelText: 'Password'),
-                            obscureText: true,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your password';
-                              }
-                              return null;
-                            },
-                            onSaved: (value) => _password = value!,
-                          ),
-                          SizedBox(height: 32),
-                          ElevatedButton(
-                            onPressed: () => _login(context),
-                            child: Text('Login'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/register');
-                            },
-                            child: Text('Create an account'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              _resetPassword(context);
-                            },
-                            child: Text('Forgot Password?'),
-                          ),
-                        ],
+                      child: AutofillGroup(
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  "Welcome back",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 24),
+                                ),
+                              ],
+                            ),
+                            TextFormField(
+                              controller: _emailController,
+                              autofillHints: const [AutofillHints.email],
+                              decoration: InputDecoration(labelText: 'Email'),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your email';
+                                }
+                                return null;
+                              },
+                              onSaved: (value) => _email = value!,
+                            ),
+                            SizedBox(height: 16),
+                            TextFormField(
+                              autofillHints: const [AutofillHints.password],
+                              decoration: InputDecoration(
+                                  labelText: 'Password',
+                                  suffixIcon: IconButton(
+                                    icon: Icon(pwdVisible
+                                        ? Icons.remove_red_eye
+                                        : Icons.remove_red_eye_outlined),
+                                    onPressed: () {
+                                      setState(() {
+                                        pwdVisible = !pwdVisible;
+                                      });
+                                    },
+                                  )),
+                              obscureText: pwdVisible,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your password';
+                                }
+                                return null;
+                              },
+                              onSaved: (value) => _password = value!,
+                            ),
+                            SizedBox(height: 32),
+                            ElevatedButton(
+                              onPressed: () {
+                                TextInput.finishAutofillContext();
+
+                                _login(context);
+                              },
+                              child: Text('Login'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/register');
+                              },
+                              child: Text('Create an account'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                _resetPassword(context);
+                              },
+                              child: Text('Forgot Password?'),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -115,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       Text(
-                        'The most accurate, AI powered, aging clock',
+                        'Comprehensive, AI powered, Biomarker platform',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -131,6 +159,20 @@ class _LoginScreenState extends State<LoginScreen> {
         ],
       ),
     );
+  }
+
+  void _autoLogin() {
+    print("In Auto Login");
+    AuthProvider authProvider =
+        Provider.of<AuthProvider>(context, listen: false);
+
+    if (authProvider.currentUser != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacementNamed(context, '/home');
+      });
+    } else {
+      print("No available user");
+    }
   }
 
   void _login(BuildContext context) async {
@@ -183,6 +225,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   String _email = '';
   String _password = '';
+  String _realName = '';
+  String _realSurname = '';
+  bool pwdVisible = true;
 
   @override
   Widget build(BuildContext context) {
@@ -211,7 +256,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ],
                           ),
                           TextFormField(
+                            decoration: InputDecoration(labelText: 'Name'),
+                            autofillHints: const [AutofillHints.name],
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your name';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) => _realName = value!,
+                          ),
+                          SizedBox(height: 16),
+                          TextFormField(
                             decoration: InputDecoration(labelText: 'Email'),
+                            autofillHints: const [AutofillHints.email],
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your email';
+                              }
+                              return null;
+                            },
+                            onSaved: (value) => _realSurname = value!,
+                          ),
+                          SizedBox(height: 16),
+                          TextFormField(
+                            decoration: InputDecoration(labelText: 'Email'),
+                            autofillHints: const [AutofillHints.email],
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your email';
@@ -222,7 +292,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           SizedBox(height: 16),
                           TextFormField(
-                            decoration: InputDecoration(labelText: 'Password'),
+                            autofillHints: const [AutofillHints.newPassword],
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              suffixIcon: IconButton(
+                                icon: Icon(pwdVisible
+                                    ? Icons.remove_red_eye
+                                    : Icons.remove_red_eye_outlined),
+                                onPressed: () {
+                                  setState(() {
+                                    pwdVisible = !pwdVisible;
+                                  });
+                                },
+                              ),
+                            ),
                             obscureText: true,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -276,7 +359,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                       Text(
-                        'The most accurate, AI powered, aging clock',
+                        'Comprehensive, AI powered, Biomarker platform',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,

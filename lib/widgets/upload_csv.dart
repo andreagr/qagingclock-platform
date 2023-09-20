@@ -38,8 +38,12 @@ class _CsvUploadStepState extends State<CsvUploadStep> {
       child: Container(
         width: 468,
         decoration: BoxDecoration(
-          color: theme.colorScheme.inversePrimary,
-          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+                color: Colors.grey.shade200, spreadRadius: 0.2, blurRadius: 20)
+          ],
+          borderRadius: BorderRadius.circular(10),
         ),
         padding: EdgeInsets.all(20),
         child: Column(
@@ -57,8 +61,17 @@ class _CsvUploadStepState extends State<CsvUploadStep> {
               width: 300,
               padding: EdgeInsets.only(bottom: 20),
               decoration: BoxDecoration(
-                  color: highlighted1 ? theme.primaryColorLight : Colors.white,
-                  borderRadius: BorderRadius.all(Radius.circular(20))),
+                color: highlighted1 ? theme.primaryColorLight : Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.grey.shade200,
+                      spreadRadius: 0.2,
+                      blurRadius: 20)
+                ],
+                borderRadius: BorderRadius.all(
+                  Radius.circular(10),
+                ),
+              ),
               child: Column(
                 children: [
                   Expanded(
@@ -134,7 +147,7 @@ class _CsvUploadStepState extends State<CsvUploadStep> {
               ),
             ),
             SizedBox(height: 10),
-            Text(_uploadedFiles.isNull ? "No file" : _uploadedFiles!)
+            Text(_uploadedFiles == null ? "No file" : _uploadedFiles!)
           ],
         ),
       ),
